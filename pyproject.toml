@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smartlighting-ml"
+version = "0.1.0"
+description = "Machine Learning utilities for the Smart Lighting TCC"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "tzdata",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+smartlighting-generate = "smartlighting_ml.data_processing.synthetic_generator:main"
+smartlighting-prepare = "smartlighting_ml.data_processing.preparation_pipeline:main"
+smartlighting-train = "smartlighting_ml.training.train_isolation_forest:main"
+smartlighting-experiments-v2 = "smartlighting_ml.experiments.v2:main"
+smartlighting-generate-v2 = "smartlighting_ml.data_processing.synthetic_generator_v2:main"
+smartlighting-prepare-v2 = "smartlighting_ml.data_processing.prepare_v2_development:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
