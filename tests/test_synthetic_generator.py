@@ -24,12 +24,12 @@ def test_generates_expected_schema_sensors_and_period() -> None:
     assert list(outages.columns) == OUTAGE_COLUMNS
     assert set(events["SensorId"]) == {sensor.sensor_id for sensor in SENSORS}
     assert {sensor.sensor_id for sensor in SENSORS} == {
-        "PIR-01",
-        "PIR-02",
-        "PIR-03",
-        "PIR-04",
-        "PIR-05",
-        "PIR-06",
+        "SENSOR-01",
+        "SENSOR-02",
+        "SENSOR-03",
+        "SENSOR-04",
+        "SENSOR-05",
+        "SENSOR-06",
     }
     assert len({sensor.device_id for sensor in SENSORS}) == 6
     assert events["EventIdentifier"].is_unique

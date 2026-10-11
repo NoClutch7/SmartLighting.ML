@@ -30,15 +30,15 @@ Referências principais:
 O `SmartLighting.ML` é o componente de Machine Learning de um TCC sobre
 iluminação pública inteligente em uma maquete de condomínio residencial. O
 condomínio é representado como uma área quadrada, com dez postes de iluminação
-no perímetro da quadra e seis sensores PIR distribuídos pelas calçadas. Não há
+no perímetro da quadra e seis sensores distribuídos pelas calçadas. Não há
 postes dentro da quadra. As posições exatas dos sensores ainda não foram
-mapeadas; por isso, os identificadores `PIR-01` a `PIR-06` são neutros e não
+mapeadas; por isso, os identificadores `SENSOR-01` a `SENSOR-06` são neutros e não
 devem ser interpretados como entrada, rua ou área esportiva.
 
 O problema de ML é aprender o padrão histórico individual de cada sensor e
 atribuir um escore de anomalia a janelas de atividade. O objetivo não é contar
 pessoas nem concluir que ocorreu uma invasão. Cada evento representa uma borda
-elétrica de ativação `HIGH → LOW` do PIR. Uma pessoa pode não gerar pulso, gerar
+elétrica de ativação `HIGH → LOW` do sensor. Uma pessoa pode não gerar pulso, gerar
 um pulso ou gerar vários pulsos.
 
 O firmware considerado mantém o sinal ativo por um período físico ainda não
@@ -49,7 +49,7 @@ aproximadamente 8% após sete segundos sem sinal, seguido por transição gradua
 
 O relacionamento planejado com o restante do TCC é:
 
-1. ESP32 e PIR produzem telemetria;
+1. ESP32 e sensores produzem telemetria;
 2. o módulo Python valida e agrega os eventos;
 3. características de cinco minutos são calculadas;
 4. um detector por sensor atribui escore e decisão;
@@ -318,12 +318,12 @@ entre indisponibilidade e rearme. A distribuição observada é:
 
 | Sensor | Rajadas | Oscilações | Total |
 | --- | ---: | ---: | ---: |
-| PIR-01 | 60 | 60 | 120 |
-| PIR-02 | 60 | 59 | 119 |
-| PIR-03 | 60 | 60 | 120 |
-| PIR-04 | 60 | 60 | 120 |
-| PIR-05 | 60 | 60 | 120 |
-| PIR-06 | 60 | 59 | 119 |
+| SENSOR-01 | 60 | 60 | 120 |
+| SENSOR-02 | 60 | 59 | 119 |
+| SENSOR-03 | 60 | 60 | 120 |
+| SENSOR-04 | 60 | 60 | 120 |
+| SENSOR-05 | 60 | 60 | 120 |
+| SENSOR-06 | 60 | 59 | 119 |
 
 ### 4.7 Preparação v2
 
@@ -393,7 +393,7 @@ Data e commit: **Não identificado nos artefatos disponíveis**.
 
 A documentação passou a representar dez postes no perímetro, nenhum poste no
 interior da quadra e seis sensores nas calçadas. Nomes antigos baseados em áreas
-específicas foram substituídos por `PIR-01` a `PIR-06`.
+específicas foram substituídos por `SENSOR-01` a `SENSOR-06`.
 
 Evidências: `README.md`, `docs/PLANEJAMENTO.md`, `docs/DADOS_SINTETICOS.md` e
 constante `SENSORS` em `synthetic_generator.py`.
@@ -470,12 +470,12 @@ limiares. O teste é aplicado somente após essa escolha.
 
 | Sensor | Validação | Teste |
 | --- | ---: | ---: |
-| PIR-01 | 2 | 2 |
-| PIR-02 | 3 | 3 |
-| PIR-03 | 3 | 3 |
-| PIR-04 | 3 | 3 |
-| PIR-05 | 3 | 3 |
-| PIR-06 | 2 | 2 |
+| SENSOR-01 | 2 | 2 |
+| SENSOR-02 | 3 | 3 |
+| SENSOR-03 | 3 | 3 |
+| SENSOR-04 | 3 | 3 |
+| SENSOR-05 | 3 | 3 |
+| SENSOR-06 | 2 | 2 |
 
 Essa quantidade é insuficiente para métricas estáveis; uma única janela altera
 substancialmente recall e F1.
@@ -486,18 +486,18 @@ Fonte: `artifacts/isolation_forest_v1/results/test_metrics.csv`.
 
 | Sensor | Detector | TP | FP | TN | FN | Precisão | Recall | F1 |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| PIR-01 | Isolation Forest | 1 | 31 | 1263 | 1 | 0,0313 | 0,5000 | 0,0588 |
-| PIR-01 | Estatístico | 2 | 0 | 1294 | 0 | 1,0000 | 1,0000 | 1,0000 |
-| PIR-02 | Isolation Forest | 0 | 0 | 1293 | 3 | 0,0000 | 0,0000 | 0,0000 |
-| PIR-02 | Estatístico | 3 | 0 | 1293 | 0 | 1,0000 | 1,0000 | 1,0000 |
-| PIR-03 | Isolation Forest | 1 | 17 | 1276 | 2 | 0,0556 | 0,3333 | 0,0952 |
-| PIR-03 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
-| PIR-04 | Isolation Forest | 0 | 0 | 1293 | 3 | 0,0000 | 0,0000 | 0,0000 |
-| PIR-04 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
-| PIR-05 | Isolation Forest | 0 | 1 | 1292 | 3 | 0,0000 | 0,0000 | 0,0000 |
-| PIR-05 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
-| PIR-06 | Isolation Forest | 1 | 38 | 1256 | 1 | 0,0256 | 0,5000 | 0,0488 |
-| PIR-06 | Estatístico | 2 | 0 | 1294 | 0 | 1,0000 | 1,0000 | 1,0000 |
+| SENSOR-01 | Isolation Forest | 1 | 31 | 1263 | 1 | 0,0313 | 0,5000 | 0,0588 |
+| SENSOR-01 | Estatístico | 2 | 0 | 1294 | 0 | 1,0000 | 1,0000 | 1,0000 |
+| SENSOR-02 | Isolation Forest | 0 | 0 | 1293 | 3 | 0,0000 | 0,0000 | 0,0000 |
+| SENSOR-02 | Estatístico | 3 | 0 | 1293 | 0 | 1,0000 | 1,0000 | 1,0000 |
+| SENSOR-03 | Isolation Forest | 1 | 17 | 1276 | 2 | 0,0556 | 0,3333 | 0,0952 |
+| SENSOR-03 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
+| SENSOR-04 | Isolation Forest | 0 | 0 | 1293 | 3 | 0,0000 | 0,0000 | 0,0000 |
+| SENSOR-04 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
+| SENSOR-05 | Isolation Forest | 0 | 1 | 1292 | 3 | 0,0000 | 0,0000 | 0,0000 |
+| SENSOR-05 | Estatístico | 2 | 0 | 1293 | 1 | 1,0000 | 0,6667 | 0,8000 |
+| SENSOR-06 | Isolation Forest | 1 | 38 | 1256 | 1 | 0,0256 | 0,5000 | 0,0488 |
+| SENSOR-06 | Estatístico | 2 | 0 | 1294 | 0 | 1,0000 | 1,0000 | 1,0000 |
 | **Total** | **Isolation Forest** | **3** | **87** | **7673** | **13** | **0,0333** | **0,1875** | **0,0566** |
 | **Total** | **Estatístico** | **13** | **0** | **7760** | **3** | **1,0000** | **0,8125** | **0,8966** |
 
@@ -712,7 +712,7 @@ interface uniforme e registra as transformações junto com o modelo.
 ### Limitações do domínio e hardware
 
 - posições exatas dos sensores não mapeadas;
-- duração e rearme reais do PIR não medidos;
+- duração e rearme reais do sensor não medidos;
 - dados representam pulsos, não pessoas, direção ou velocidade;
 - clima, animais, veículos, feriados e obstruções não são modelados de forma
   explícita;

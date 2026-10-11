@@ -1,4 +1,4 @@
-"""Prepare five-minute PIR features without training an anomaly detector."""
+"""Prepare five-minute sensores features without training an anomaly detector."""
 
 from __future__ import annotations
 
@@ -77,24 +77,24 @@ def load_inputs(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """Load and validate events, outages, and evaluation-only anomaly labels."""
 
-    events = pd.read_csv(raw_dir / "pir_events.csv", dtype="string")
+    events = pd.read_csv(raw_dir / "sensor_events.csv", dtype="string")
     outages = pd.read_csv(raw_dir / "telemetry_outages.csv", dtype="string")
     labels = pd.read_csv(raw_dir / "anomaly_labels.csv", dtype="string")
 
-    _require_columns(events, EVENT_COLUMNS, "pir_events.csv")
+    _require_columns(events, EVENT_COLUMNS, "sensor_events.csv")
     _require_columns(outages, OUTAGE_COLUMNS, "telemetry_outages.csv")
     _require_columns(labels, LABEL_COLUMNS, "anomaly_labels.csv")
 
     for column in ("EventIdentifier", "SensorId", "DeviceId"):
         if events[column].isna().any() or events[column].str.strip().eq("").any():
-            raise ValueError(f"pir_events.csv contains an empty {column}")
+            raise ValueError(f"sensor_events.csv contains an empty {column}")
 
     events = events.loc[:, EVENT_COLUMNS].copy()
     events["OccurredAtUtc"] = _parse_utc(events["OccurredAtUtc"], "OccurredAtUtc")
     events = events.drop_duplicates(subset="EventIdentifier", keep="first")
     events = events.sort_values("OccurredAtUtc", kind="stable").reset_index(drop=True)
     if events.empty:
-        raise ValueError("pir_events.csv contains no events")
+        raise ValueError("sensor_events.csv contains no events")
 
     device_counts = events.groupby("SensorId")["DeviceId"].nunique()
     if device_counts.gt(1).any():

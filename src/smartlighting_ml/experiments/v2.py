@@ -50,7 +50,7 @@ FEATURE_SETS = {
     ],
 }
 ANOMALY_TYPES = ("out_of_pattern_burst", "electrical_oscillation")
-SENSORS = tuple(f"PIR-{index:02d}" for index in range(1, 7))
+SENSORS = tuple(f"SENSOR-{index:02d}" for index in range(1, 7))
 
 
 @dataclass(frozen=True)
@@ -465,18 +465,35 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir", type=Path, default=Path("artifacts/experiments_v2")
     )
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--quick",
         action="store_true",
         help="run one small configuration to validate the experimental workflow",
+    )
+    mode.add_argument(
+        "--focused",
+        action="store_true",
+        help="compare the original and simplified feature sets with 100 trees",
     )
     return parser.parse_args()
 
 
 def main() -> None:
     args = _parse_args()
-    grid = [HyperParameters(10, 128, 1.0)] if args.quick else None
-    selected_feature_sets = {"original_9": FEATURE_SETS["original_9"]} if args.quick else None
+    grid = (
+        [HyperParameters(10, 128, 1.0)]
+        if args.quick
+        else [HyperParameters(100, 128, 1.0)] if args.focused else None
+    )
+    selected_feature_sets = (
+        {"original_9": FEATURE_SETS["original_9"]}
+        if args.quick
+        else {
+            name: FEATURE_SETS[name]
+            for name in ("original_9", "count_with_temporal")
+        } if args.focused else None
+    )
     metrics = run_experiments(
         V2Config(processed_dir=args.processed_dir, output_dir=args.output_dir),
         feature_sets=selected_feature_sets,

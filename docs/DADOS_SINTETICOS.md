@@ -1,10 +1,10 @@
-# Dados sintéticos de sensores PIR
+# Dados sintéticos de sensores
 
 ## Finalidade
 
-O gerador produz 30 dias de telemetria reproduzível para seis sensores PIR
-espalhados pelas calçadas da maquete. Os identificadores fixos são `PIR-01` a
-`PIR-06`, associados respectivamente a `ESP32-SENSOR-01` a
+O gerador produz 30 dias de telemetria reproduzível para seis sensores
+espalhados pelas calçadas da maquete. Os identificadores fixos são `SENSOR-01` a
+`SENSOR-06`, associados respectivamente a `ESP32-SENSOR-01` a
 `ESP32-SENSOR-06`. Como as posições ainda não foram mapeadas, nenhum identificador
 indica uma região física específica.
 
@@ -36,7 +36,7 @@ que essa incerteza fique explícita, o cenário padrão usa:
 
 | Parâmetro | Valor sintético |
 | --- | ---: |
-| Duração de um pulso PIR normal | uniforme entre 2 e 6 segundos |
+| Duração de um pulso do sensor normal | uniforme entre 2 e 6 segundos |
 | Rearme após um pulso normal | 1,5 segundo |
 | Duração durante oscilação elétrica | uniforme entre 0,15 e 0,45 segundo |
 | Rearme durante oscilação elétrica | 0,25 segundo |
@@ -67,7 +67,7 @@ São inseridas duas classes controladas de anomalia:
   estados ativo, inativo e de rearme da simulação.
 
 Os rótulos ficam somente em `anomaly_labels.csv`, relacionados ao evento por
-`EventIdentifier`. O arquivo `pir_events.csv` não revela quais linhas são
+`EventIdentifier`. O arquivo `sensor_events.csv` não revela quais linhas são
 anômalas e pode ser usado como entrada de uma avaliação sem vazamento do rótulo.
 
 Quando habilitadas, as indisponibilidades removem da telemetria observável os
@@ -78,7 +78,7 @@ de telemetria.
 
 ## Arquivos e esquema
 
-`pir_events.csv` contém exatamente:
+`sensor_events.csv` contém exatamente:
 
 - `EventIdentifier`;
 - `SensorId`;
@@ -100,7 +100,7 @@ indisponibilidade.
   pessoas.
 - Clima, feriados, eventos do condomínio, animais, veículos e obstruções não são
   representados explicitamente.
-- A duração e o rearme do PIR são suposições e podem divergir do componente real.
+- A duração e o rearme do sensor são suposições e podem divergir do componente real.
 - Oscilações elétricas reais podem ter formas e frequências diferentes.
 - Falhas de rede são representadas como intervalos completos, sem atrasos,
   duplicações ou reordenação de mensagens.

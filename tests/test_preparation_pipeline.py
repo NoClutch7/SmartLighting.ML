@@ -27,10 +27,10 @@ def prepared():
 
 
 def test_load_validates_deduplicates_and_sorts(tmp_path) -> None:
-    source_events = pd.read_csv(RAW_DIR / "pir_events.csv", dtype="string")
+    source_events = pd.read_csv(RAW_DIR / "sensor_events.csv", dtype="string")
     duplicate = source_events.iloc[[0]]
     shuffled = pd.concat([source_events.iloc[::-1], duplicate], ignore_index=True)
-    shuffled.to_csv(tmp_path / "pir_events.csv", index=False)
+    shuffled.to_csv(tmp_path / "sensor_events.csv", index=False)
     pd.read_csv(RAW_DIR / "telemetry_outages.csv").to_csv(
         tmp_path / "telemetry_outages.csv", index=False
     )
@@ -68,7 +68,7 @@ def test_local_time_and_cyclical_features_are_correct(prepared) -> None:
 
 def test_historical_features_use_only_strictly_prior_windows(prepared) -> None:
     sensor_windows = prepared.all_windows.loc[
-        prepared.all_windows["SensorId"].eq("PIR-01")
+        prepared.all_windows["SensorId"].eq("SENSOR-01")
     ].reset_index(drop=True)
     candidate_indexes = sensor_windows.index[
         sensor_windows[FEATURE_COLUMNS].notna().all(axis=1)

@@ -3,7 +3,7 @@
 ## Escopo
 
 O cenário v2 simula 120 dias consecutivos, de 1º de fevereiro a 31 de maio de
-2026 no horário `America/Sao_Paulo`, para os sensores `PIR-01` a `PIR-06`. Ele é
+2026 no horário `America/Sao_Paulo`, para os sensores `SENSOR-01` a `SENSOR-06`. Ele é
 exclusivamente de desenvolvimento: nenhum novo teste foi criado.
 
 Os arquivos brutos ficam em `data/raw/synthetic_v2_development` e os processados
@@ -41,12 +41,12 @@ suprimidas pela indisponibilidade/rearme, comportamento coerente com a simulaç�
 
 | Sensor | Rajadas | Oscilações | Total |
 | --- | ---: | ---: | ---: |
-| PIR-01 | 60 | 60 | 120 |
-| PIR-02 | 60 | 59 | 119 |
-| PIR-03 | 60 | 60 | 120 |
-| PIR-04 | 60 | 60 | 120 |
-| PIR-05 | 60 | 60 | 120 |
-| PIR-06 | 60 | 59 | 119 |
+| SENSOR-01 | 60 | 60 | 120 |
+| SENSOR-02 | 60 | 59 | 119 |
+| SENSOR-03 | 60 | 60 | 120 |
+| SENSOR-04 | 60 | 60 | 120 |
+| SENSOR-05 | 60 | 60 | 120 |
+| SENSOR-06 | 60 | 59 | 119 |
 
 Os rótulos permanecem separados em `anomaly_labels.csv`.
 

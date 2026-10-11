@@ -8,7 +8,7 @@ um condomínio residencial de formato quadrado. A maquete do projeto contém:
 - 10 postes de iluminação distribuídos ao redor da quadra, no perímetro do
   condomínio;
 - nenhum poste instalado dentro da quadra;
-- 6 sensores PIR espalhados pelas calçadas e controlados por ESP32;
+- 6 sensores espalhados pelas calçadas e controlados por ESP32;
 - ruas internas, calçadas, casas e a quadra central representadas fisicamente.
 
 As posições exatas dos seis sensores ainda não foram mapeadas. Assim, nenhum

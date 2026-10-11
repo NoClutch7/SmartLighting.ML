@@ -1,4 +1,4 @@
-"""Generate the 120-day synthetic development scenario for v2 experiments."""
+"""Generate synthetic development or later holdout scenarios for v2 experiments."""
 
 from __future__ import annotations
 
@@ -35,6 +35,7 @@ LEGITIMATE_COLUMNS = [
 
 @dataclass(frozen=True)
 class V2GeneratorConfig:
+    scenario: str = "synthetic_v2_development"
     days: int = 120
     seed: int = 20261008
     start_local: datetime = datetime(2026, 2, 1)
@@ -294,8 +295,8 @@ def _unavailable(candidate: _Candidate, outages: list[dict[str, object]]) -> boo
 def generate_v2_data(
     config: V2GeneratorConfig = V2GeneratorConfig(),
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, dict[str, object]]:
-    if config.days != 120:
-        raise ValueError("the v2 development scenario must cover exactly 120 days")
+    if config.days < 1:
+        raise ValueError("the synthetic scenario must cover at least one day")
     rng = np.random.default_rng(config.seed)
     normal = _normal_candidates(config, rng)
     anomalies = _anomaly_candidates(config, rng)
@@ -354,7 +355,7 @@ def generate_v2_data(
         )
     legitimate_frame = pd.DataFrame(legitimate_episodes, columns=LEGITIMATE_COLUMNS)
     metadata = {
-        "scenario": "synthetic_v2_development",
+        "scenario": config.scenario,
         "days": config.days,
         "seed": config.seed,
         "start_local": config.start_local.isoformat(),
@@ -393,7 +394,7 @@ def write_v2_files(
 ) -> None:
     events, labels, outages, legitimate, metadata = generate_v2_data(config)
     output_dir.mkdir(parents=True, exist_ok=True)
-    events.to_csv(output_dir / "pir_events.csv", index=False, lineterminator="\n")
+    events.to_csv(output_dir / "sensor_events.csv", index=False, lineterminator="\n")
     labels.to_csv(output_dir / "anomaly_labels.csv", index=False, lineterminator="\n")
     outages.to_csv(output_dir / "telemetry_outages.csv", index=False, lineterminator="\n")
     legitimate.to_csv(
@@ -411,8 +412,20 @@ def main() -> None:
         type=Path,
         default=Path("data/raw/synthetic_v2_development"),
     )
+    parser.add_argument("--scenario", default="synthetic_v2_development")
+    parser.add_argument("--days", type=int, default=120)
+    parser.add_argument("--seed", type=int, default=20261008)
+    parser.add_argument("--start-local", default="2026-02-01")
     args = parser.parse_args()
-    write_v2_files(args.output_dir)
+    write_v2_files(
+        args.output_dir,
+        V2GeneratorConfig(
+            scenario=args.scenario,
+            days=args.days,
+            seed=args.seed,
+            start_local=datetime.fromisoformat(args.start_local),
+        ),
+    )
     print(args.output_dir)
 
 

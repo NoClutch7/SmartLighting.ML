@@ -3,17 +3,20 @@
 Projeto de Machine Learning de um TCC sobre iluminação pública inteligente em um
 condomínio residencial de formato quadrado. A maquete possui 10 postes de
 iluminação distribuídos ao redor da quadra, no perímetro do condomínio, e 6
-sensores PIR espalhados pelas calçadas e controlados por dispositivos ESP32. Não
+sensores espalhados pelas calçadas e controlados por dispositivos ESP32. Não
 existem postes instalados dentro da quadra.
 
-O objetivo deste módulo é aprender o comportamento histórico de circulação de
-cada sensor e, futuramente, identificar movimentações atípicas. As posições
-exatas dos sensores ainda não foram mapeadas; por isso, o projeto usa apenas
-identificadores neutros e não atribui sensores a regiões específicas.
+O objetivo deste módulo é estudar padrões de atividade de cada sensor e
+identificar intervalos atípicos. As posições exatas dos sensores ainda não
+foram mapeadas; por isso, os perfis simulados usam identificadores neutros e
+não são associados a regiões específicas nem aos GUIDs cadastrados na API.
 
-Esta versão contém o gerador de telemetria sintética e o pipeline de preparação
-dos dados. O modelo, o treinamento e a integração com a API C#
-`SmartLighting.Api` ainda não foram implementados.
+Esta versão gera dados simulados, prepara intervalos de cinco minutos, treina
+seis modelos Isolation Forest e compara seus resultados com um método
+estatístico. A versão 2 foi treinada e avaliada em um período simulado posterior
+ao desenvolvimento. Um serviço Python disponibiliza os resultados para
+a API e para a página **IA** da Web. O treinamento e a avaliação ainda não usam
+eventos reais do SQL Server e não produzem alertas operacionais.
 
 ## Tecnologias previstas
 
@@ -28,7 +31,7 @@ dos dados. O modelo, o treinamento e a integração com a API C#
 
 ```text
 SmartLighting.ML/
-├── artifacts/                 # Modelos e metadados gerados futuramente
+├── artifacts/                 # Modelos, previsões e métricas gerados localmente
 ├── data/
 │   ├── raw/                   # Dados recebidos sem transformação
 │   └── processed/             # Dados preparados para treinamento/inferência
@@ -37,19 +40,21 @@ SmartLighting.ML/
 │       ├── data_processing/   # Limpeza e transformação de dados dos sensores
 │       │   ├── synthetic_generator.py
 │       │   └── preparation_pipeline.py
-│       ├── training/          # Treinamento e persistência do modelo
-│       │   └── train_isolation_forest.py
-│       ├── inference/         # Detecção de anomalias com modelo treinado
-│       │   └── predictor.py
+│       ├── training/          # Treinamento e persistência dos modelos
+│       │   ├── train_isolation_forest.py
+│       │   └── train_v2.py
+│       ├── inference/         # Inferência e serviço HTTP experimental
+│       │   ├── predictor.py
+│       │   └── demo_server.py
 │       ├── experiments/       # Experimentos metodológicos isolados
 │       │   └── v2.py
-│       └── contracts/         # Contratos de entrada e saída para a API C#
 ├── tests/                     # Testes automatizados
 ├── docs/
 │   ├── PLANEJAMENTO.md        # Escopo e etapas planejadas do módulo de ML
 │   ├── DADOS_SINTETICOS.md    # Hipóteses e uso do gerador
 │   ├── PREPARACAO_DADOS.md    # Regras do pipeline de características
 │   ├── MODELO_ISOLATION_FOREST.md
+│   ├── MODELO_V2.md
 │   └── EXPERIMENTOS_V2.md
 ├── .gitignore
 ├── README.md
@@ -81,7 +86,7 @@ smartlighting-generate
 
 O comando cria em `data/raw/synthetic`:
 
-- `pir_events.csv`: pulsos observados, sem qualquer rótulo;
+- `sensor_events.csv`: pulsos observados, sem qualquer rótulo;
 - `anomaly_labels.csv`: rótulos separados, exclusivamente para avaliação;
 - `telemetry_outages.csv`: intervalos em que a ausência de eventos não é
   confiável.
@@ -116,38 +121,79 @@ futuro e grava os conjuntos cronológicos em `data/processed`. A especificação
 detalhada está em
 [`docs/PREPARACAO_DADOS.md`](docs/PREPARACAO_DADOS.md).
 
-## Integração futura
+## Treinamento e avaliação reproduzíveis
 
-A pasta `contracts` será responsável pelas estruturas de dados trocadas com a
-`SmartLighting.Api`. Essa separação permitirá manter o formato das requisições e
-respostas independente da lógica de processamento, treinamento e inferência.
-
-Uma futura integração poderá executar o serviço Python separadamente e trocar
-dados serializados com a API C#, sem acoplar o código do modelo ao projeto .NET.
-
-## Abordagem planejada
-
-O modelo previsto é o **Isolation Forest**, aplicado separadamente aos padrões de
-cada sensor. Os eventos serão agregados em janelas de cinco minutos e analisados
-em conjunto com informações de horário e dia da semana. Dessa forma, uma
-movimentação não será considerada anormal apenas por ocorrer com baixa frequência:
-ela será comparada ao comportamento histórico esperado para aquele sensor e
-contexto temporal.
-
-O planejamento detalhado está em [`docs/PLANEJAMENTO.md`](docs/PLANEJAMENTO.md).
-
-## Treinamento e avaliação
-
-Para treinar os seis modelos, calibrar os limiares somente com validação e então
-avaliar o teste reservado:
+Execute estes comandos, nesta ordem, a partir da raiz do projeto:
 
 ```powershell
+smartlighting-generate
+smartlighting-prepare
 smartlighting-train
 ```
 
-Os modelos, limiares, metadados, previsões e métricas são gravados em
-`artifacts/isolation_forest_v1`. A metodologia e os resultados iniciais estão em
+O conjunto padrão simula 30 dias de atividade de seis sensores. As linhas
+preparadas são divididas em ordem cronológica: treino para ajustar os modelos,
+validação para definir os limiares e teste posterior para medir o resultado.
+As situações anormais criadas pelo gerador têm rótulos separados; esses rótulos
+não são características fornecidas ao Isolation Forest no treinamento.
+
+As métricas completas ficam em
+`artifacts/isolation_forest_v1/results/test_metrics.csv` e as respostas por
+intervalo em `artifacts/isolation_forest_v1/results/test_predictions.csv`.
+Esses arquivos são gerados localmente e ignorados pelo Git; o procedimento e os
+resultados avaliados estão descritos em
 [`docs/MODELO_ISOLATION_FOREST.md`](docs/MODELO_ISOLATION_FOREST.md).
+
+## Demonstração experimental na API e na Web
+
+Depois de gerar, preparar e treinar a versão 2, inicie o serviço Python na raiz
+deste projeto:
+
+```powershell
+$env:PYTHONPATH = "src"
+.\.venv\Scripts\python.exe -m smartlighting_ml.inference.demo_server
+```
+
+O serviço escuta somente em `127.0.0.1:8765`. Por padrão, ele lê os resultados
+do teste final sintético da versão 2, carrega os modelos locais e verifica
+novamente quatro exemplos: um
+acerto de anomalia, um alarme falso, uma anomalia não detectada e um acerto de
+período normal. A `SmartLighting.Api` consulta `GET /demo` desse serviço por
+meio da rota `GET /ml/demo`. A `SmartLighting.Web` apresenta os totais de
+treino, validação e teste, as métricas dos dois métodos e os quatro exemplos
+na página `/ia`, acessível pelo menu **IA**. Caso o Python não esteja em
+execução, a página informa a indisponibilidade.
+
+A API e a Web devem estar em execução para visualizar a página. O serviço
+Python precisa ser iniciado novamente após um novo treinamento, pois carrega
+os resultados ao iniciar.
+
+Esta demonstração **não** lê `SensorEvents` do SQL Server, não grava anomalias
+no banco e não emite alertas operacionais. Os identificadores `SENSOR-01` a
+`SENSOR-06` representam perfis simulados; não são os GUIDs dos sensores da
+maquete. Os resultados medem apenas o comportamento do modelo nesse cenário
+sintético. O processamento de eventos reais permanece como etapa futura.
+
+## Abordagem implementada
+
+O **Isolation Forest** é aplicado separadamente aos padrões simulados de cada
+sensor. Os registros são agregados em janelas de cinco minutos e analisados
+com informações de horário, dia da semana e atividade recente. O método
+estatístico de comparação considera a frequência de registros e foi avaliado
+nos mesmos intervalos de teste. Os resultados atuais não demonstram detecção
+confiável nos sensores reais.
+
+O planejamento detalhado está em [`docs/PLANEJAMENTO.md`](docs/PLANEJAMENTO.md).
+
+## Resultado do primeiro experimento
+
+No teste sintético reservado, o Isolation Forest detectou 3 de 16 intervalos
+anormais e marcou 87 intervalos normais como atípicos. O método estatístico
+detectou 13 de 16 e não marcou intervalos normais nesse mesmo conjunto. Como
+as anomalias simuladas são principalmente aumentos de frequência, o cenário
+favorece o método estatístico. Consulte
+[`docs/MODELO_ISOLATION_FOREST.md`](docs/MODELO_ISOLATION_FOREST.md) para a
+metodologia, a tabela completa e as limitações.
 
 ## Experimentos v2
 
@@ -168,13 +214,21 @@ smartlighting-prepare-v2
 smartlighting-experiments-v2 --quick --processed-dir data/processed/v2_development --output-dir artifacts/experiments_v2/development_120d
 ```
 
-Execute a grade completa somente depois de ampliar os positivos dos blocos de
-desenvolvimento:
+Uma comparação focada nos blocos de desenvolvimento levou à escolha da versão
+2 do Isolation Forest com contagem atual e informações de horário e dia. Para
+recriar o **novo teste**, posterior aos 120 dias de desenvolvimento:
 
 ```powershell
-smartlighting-experiments-v2
+smartlighting-experiments-v2 --focused --processed-dir data/processed/v2_development --output-dir artifacts/experiments_v2/focused_120d
+smartlighting-generate-v2 --output-dir data/raw/synthetic_v2_holdout --scenario synthetic_v2_holdout --days 30 --seed 20261011 --start-local 2026-06-01
+smartlighting-prepare-v2 --raw-dir data/raw/synthetic_v2_holdout --output-dir data/processed/v2_holdout
+smartlighting-train-v2
 ```
 
-Consulte [`docs/EXPERIMENTOS_V2.md`](docs/EXPERIMENTOS_V2.md) antes de interpretar
-qualquer resultado. As hipóteses do cenário de 120 dias estão em
+No novo teste sintético, o Isolation Forest v2 detectou 82 de 179 intervalos
+anormais, deixou passar 97 e produziu 70 alarmes falsos. O método estatístico
+detectou 169 de 179 e produziu 24 alarmes falsos. Esses resultados **não**
+comprovam desempenho com sensores físicos. Os detalhes, os comandos completos
+e as limitações estão em [`docs/MODELO_V2.md`](docs/MODELO_V2.md). Consulte
+também [`docs/EXPERIMENTOS_V2.md`](docs/EXPERIMENTOS_V2.md) e
 [`docs/DADOS_SINTETICOS_V2.md`](docs/DADOS_SINTETICOS_V2.md).

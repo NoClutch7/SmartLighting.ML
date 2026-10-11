@@ -1,4 +1,4 @@
-"""Train, calibrate, and evaluate one Isolation Forest per PIR sensor."""
+"""Train, calibrate, and evaluate one Isolation Forest per sensor."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ FEATURE_COLUMNS = [
     "rolling_mean_1h",
 ]
 KEY_COLUMNS = ["SensorId", "WindowStartUtc"]
-EXPECTED_SENSORS = [f"PIR-{index:02d}" for index in range(1, 7)]
+EXPECTED_SENSORS = [f"SENSOR-{index:02d}" for index in range(1, 7)]
 MODEL_VERSION = "isolation-forest-v1"
 
 
@@ -472,7 +472,7 @@ def train_and_evaluate(config: TrainingConfig = TrainingConfig()) -> pd.DataFram
         },
         "data_audit": audit,
         "limitations": [
-            "Training and evaluation use synthetic PIR pulses, not people counts.",
+            "Training and evaluation use synthetic sensor pulses, not people counts.",
             "Only two or three positive validation and test windows exist per sensor.",
             "Telemetry outages are excluded upstream and must never be treated as zero.",
             "An anomaly does not imply an intrusion, threat, or security incident.",

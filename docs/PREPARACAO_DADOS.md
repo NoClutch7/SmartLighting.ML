@@ -2,7 +2,7 @@
 
 ## Entrada e validação
 
-O pipeline lê `pir_events.csv`, `telemetry_outages.csv` e
+O pipeline lê `sensor_events.csv`, `telemetry_outages.csv` e
 `anomaly_labels.csv` de `data/raw/synthetic`. Ele exige os campos documentados,
 valida timestamps UTC, rejeita identificadores vazios, remove eventos duplicados
 por `EventIdentifier` e ordena os registros cronologicamente.

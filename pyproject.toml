@@ -21,9 +21,11 @@ test = ["pytest"]
 smartlighting-generate = "smartlighting_ml.data_processing.synthetic_generator:main"
 smartlighting-prepare = "smartlighting_ml.data_processing.preparation_pipeline:main"
 smartlighting-train = "smartlighting_ml.training.train_isolation_forest:main"
+smartlighting-train-v2 = "smartlighting_ml.training.train_v2:main"
 smartlighting-experiments-v2 = "smartlighting_ml.experiments.v2:main"
 smartlighting-generate-v2 = "smartlighting_ml.data_processing.synthetic_generator_v2:main"
 smartlighting-prepare-v2 = "smartlighting_ml.data_processing.prepare_v2_development:main"
+smartlighting-demo-server = "smartlighting_ml.inference.demo_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

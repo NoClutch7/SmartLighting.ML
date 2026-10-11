@@ -17,7 +17,7 @@ PROCESSED_DIR = Path("data/processed/v2_development")
 
 
 def _episodes() -> pd.DataFrame:
-    events = pd.read_csv(RAW_DIR / "pir_events.csv", parse_dates=["OccurredAtUtc"])
+    events = pd.read_csv(RAW_DIR / "sensor_events.csv", parse_dates=["OccurredAtUtc"])
     labels = pd.read_csv(RAW_DIR / "anomaly_labels.csv")
     return (
         labels.merge(
@@ -32,10 +32,10 @@ def _episodes() -> pd.DataFrame:
 
 
 def test_v2_scenario_covers_120_days_and_six_fixed_sensors() -> None:
-    events = pd.read_csv(RAW_DIR / "pir_events.csv", parse_dates=["OccurredAtUtc"])
+    events = pd.read_csv(RAW_DIR / "sensor_events.csv", parse_dates=["OccurredAtUtc"])
 
     assert events["EventIdentifier"].is_unique
-    assert set(events["SensorId"]) == {f"PIR-{index:02d}" for index in range(1, 7)}
+    assert set(events["SensorId"]) == {f"SENSOR-{index:02d}" for index in range(1, 7)}
     assert set(events["DeviceId"]) == {
         f"ESP32-SENSOR-{index:02d}" for index in range(1, 7)
     }
@@ -45,7 +45,7 @@ def test_v2_scenario_covers_120_days_and_six_fixed_sensors() -> None:
 
 
 def test_labels_are_consistent_and_episodes_are_independent() -> None:
-    events = pd.read_csv(RAW_DIR / "pir_events.csv")
+    events = pd.read_csv(RAW_DIR / "sensor_events.csv")
     labels = pd.read_csv(RAW_DIR / "anomaly_labels.csv")
     episodes = _episodes()
 
@@ -113,7 +113,7 @@ def test_legitimate_intense_activity_is_not_an_anomaly() -> None:
 
 
 def test_outages_produce_unreliable_null_windows_and_no_observed_events() -> None:
-    events = pd.read_csv(RAW_DIR / "pir_events.csv", parse_dates=["OccurredAtUtc"])
+    events = pd.read_csv(RAW_DIR / "sensor_events.csv", parse_dates=["OccurredAtUtc"])
     outages = pd.read_csv(
         RAW_DIR / "telemetry_outages.csv",
         parse_dates=["UnavailableFromUtc", "UnavailableToUtc"],
@@ -134,12 +134,12 @@ def test_outages_produce_unreliable_null_windows_and_no_observed_events() -> Non
 
 
 def test_v2_input_deduplication_preserves_episode_identifier(tmp_path) -> None:
-    events = pd.read_csv(RAW_DIR / "pir_events.csv").iloc[:20].copy()
+    events = pd.read_csv(RAW_DIR / "sensor_events.csv").iloc[:20].copy()
     labelled_ids = set(pd.read_csv(RAW_DIR / "anomaly_labels.csv")["EventIdentifier"])
     labelled = events.loc[events["EventIdentifier"].isin(labelled_ids)]
     if labelled.empty:
         first_label = pd.read_csv(RAW_DIR / "anomaly_labels.csv").iloc[0]
-        source = pd.read_csv(RAW_DIR / "pir_events.csv")
+        source = pd.read_csv(RAW_DIR / "sensor_events.csv")
         events = source.loc[source["EventIdentifier"].eq(first_label.EventIdentifier)]
     events = pd.concat([events, events.iloc[[0]]], ignore_index=True)
     labels = pd.read_csv(RAW_DIR / "anomaly_labels.csv")
@@ -153,7 +153,7 @@ def test_v2_input_deduplication_preserves_episode_identifier(tmp_path) -> None:
             "Reason",
         ]
     )
-    events.to_csv(tmp_path / "pir_events.csv", index=False)
+    events.to_csv(tmp_path / "sensor_events.csv", index=False)
     labels.to_csv(tmp_path / "anomaly_labels.csv", index=False)
     outages.to_csv(tmp_path / "telemetry_outages.csv", index=False)
 

@@ -1,4 +1,4 @@
-"""Generate reproducible PIR telemetry for the Smart Lighting scale model."""
+"""Generate reproducible sensores telemetry for the Smart Lighting scale model."""
 
 from __future__ import annotations
 
@@ -33,12 +33,12 @@ class Sensor:
 
 
 SENSORS = (
-    Sensor("PIR-01", "ESP32-SENSOR-01", 0),
-    Sensor("PIR-02", "ESP32-SENSOR-02", 1),
-    Sensor("PIR-03", "ESP32-SENSOR-03", 2),
-    Sensor("PIR-04", "ESP32-SENSOR-04", 3),
-    Sensor("PIR-05", "ESP32-SENSOR-05", 4),
-    Sensor("PIR-06", "ESP32-SENSOR-06", 5),
+    Sensor("SENSOR-01", "ESP32-SENSOR-01", 0),
+    Sensor("SENSOR-02", "ESP32-SENSOR-02", 1),
+    Sensor("SENSOR-03", "ESP32-SENSOR-03", 2),
+    Sensor("SENSOR-04", "ESP32-SENSOR-04", 3),
+    Sensor("SENSOR-05", "ESP32-SENSOR-05", 4),
+    Sensor("SENSOR-06", "ESP32-SENSOR-06", 5),
 )
 
 # Expected pulses per five-minute window for four periods of the day. These are
@@ -313,7 +313,7 @@ def write_csv_files(
     events, labels, outages = generate_data(config)
     output_dir.mkdir(parents=True, exist_ok=True)
     paths = (
-        output_dir / "pir_events.csv",
+        output_dir / "sensor_events.csv",
         output_dir / "anomaly_labels.csv",
         output_dir / "telemetry_outages.csv",
     )
